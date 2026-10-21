@@ -1,0 +1,5 @@
+lab/webroot/uploads/*
+!lab/webroot/uploads/.gitkeep
+poc/__pycache__/
+.ruby-lsp/
+*.pyc
