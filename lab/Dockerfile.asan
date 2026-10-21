@@ -1,0 +1,25 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    clang libclang-dev \
+    autoconf bison flex re2c pkg-config curl \
+    libxml2-dev libsqlite3-dev libonig-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG PHP_VERSION=8.2.34
+RUN curl -fsSL "https://www.php.net/distributions/php-${PHP_VERSION}.tar.gz" \
+    | tar xz -C /usr/src && \
+    cd /usr/src/php-${PHP_VERSION} && \
+    CC=clang CXX=clang++ \
+    CFLAGS="-fsanitize=address -g -O1" \
+    LDFLAGS="-fsanitize=address" \
+    ./configure \
+        --with-config-file-path=/usr/local/etc/php \
+        --enable-cli \
+        --without-pcre-jit \
+        --disable-opcache && \
+    make -j$(nproc) && make install
+
+ENV USE_ZEND_ALLOC=0
+ENV ASAN_OPTIONS=detect_leaks=0:symbolize=1:halt_on_error=0
+WORKDIR /app

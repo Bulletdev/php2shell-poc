@@ -1,0 +1,22 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php2shell-lab
+    volumes:
+      - ./webroot:/var/www/html
+      - ./php.ini:/usr/local/etc/php/php.ini
+    security_opt: [seccomp:unconfined]
+    privileged: true
+    command: >
+      bash -c "mkdir -p /tmp/sessions && chmod 1777 /tmp/sessions && php-fpm"
+
+  nginx:
+    image: nginx:alpine
+    container_name: php2shell-nginx
+    ports: ["18080:80"]
+    volumes:
+      - ./webroot:/var/www/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on: [php]
